@@ -5,7 +5,7 @@ current position, choose goals, and progress through actionable journeys.
 
 ## Project status
 
-Foundation setup is in progress. Application services are not implemented yet.
+Foundation setup is in progress. The Next.js starter runs locally; backend and database setup are pending. See docs/development.md for setup commands and verification status.
 
 ## Architecture
 
