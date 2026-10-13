@@ -179,3 +179,62 @@ Readiness tests simulate database success and failure.
 The running readiness endpoint was checked separately against real PostgreSQL.
 
 Frontend-to-backend integration, schema migrations, and CI remain pending.
+
+## Frontend-to-backend integration
+
+Frontend environment configuration:
+
+    cp -n apps/web/.env.example apps/web/.env.local
+
+API_BASE_URL identifies the FastAPI server.
+It is a server-only variable and defaults in the example to:
+http://127.0.0.1:8000
+
+Restart Next.js after changing its environment configuration.
+
+The browser requests /api/health from Next.js.
+The Next.js route requests /health/ready from FastAPI.
+FastAPI queries PostgreSQL and owns the database-readiness decision.
+
+The Next.js route validates the response, disables caching, and applies
+an eight-second fetch timeout. Connection or invalid-response errors
+return HTTP 502. Database unavailability returns HTTP 503.
+
+The home page displays loading, success, database-unavailable, and error
+states. Check again performs a fresh request.
+
+## Run the local application
+
+Keep Docker Desktop running.
+
+Terminal 1, from the repository root:
+
+    docker compose up -d db
+    source apps/api/.venv/Scripts/activate
+    cd apps/api
+    python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+
+Terminal 2, from the repository root:
+
+    cd apps/web
+    npm run dev
+
+Open the Local URL printed by Next.js.
+Keep both terminals running.
+
+## Frontend integration checkpoint: 2026-10-14
+
+- ESLint passed without warnings.
+- Standalone TypeScript checking passed.
+- Production build completed successfully.
+- /api/health returned the real backend readiness response.
+- The home page displayed Connection successful.
+- Connection successful returned after restarting FastAPI.
+
+The backend-offline error state and database-unavailable UI state have
+not yet been explicitly confirmed.
+
+Cache Components is enabled. The health route uses the default runtime
+without an explicit runtime route-segment export.
+
+CI configuration remains pending.
