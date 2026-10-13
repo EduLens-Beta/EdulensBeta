@@ -238,3 +238,26 @@ Cache Components is enabled. The health route uses the default runtime
 without an explicit runtime route-segment export.
 
 CI configuration remains pending.
+
+## Continuous integration
+
+.github/workflows/ci.yml runs on pushes to main and feat/foundation,
+pull requests targeting main, and manual workflow dispatch.
+
+Frontend checks:
+- npm ci
+- ESLint with zero warnings allowed
+- TypeScript checking
+- Production build
+
+Backend checks:
+- Install recorded dependencies
+- pip check
+- pytest
+- Readiness endpoint against a temporary real PostgreSQL 17 database
+
+CI uses Node.js 22.14.0 and Python 3.14.4 on GitHub-hosted Ubuntu.
+Its test database is separate from local development data.
+
+The first CI run must be inspected on GitHub before this checkpoint
+is considered verified.

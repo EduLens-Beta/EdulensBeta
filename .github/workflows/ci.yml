@@ -1,0 +1,127 @@
+name: EduLens CI
+
+on:
+  push:
+    branches:
+      - main
+      - feat/foundation
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: apps/web
+
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22.14.0"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check lint rules
+        run: npm run lint -- --max-warnings=0
+
+      - name: Check TypeScript
+        run: npx --no-install tsc --noEmit
+
+      - name: Build frontend
+        run: npm run build
+
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: apps/api
+
+    env:
+      POSTGRES_DB: edulens_ci
+      POSTGRES_USER: edulens_ci
+      POSTGRES_PASSWORD: ci_only_test_password
+      POSTGRES_HOST: "127.0.0.1"
+      POSTGRES_PORT: "5432"
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: edulens_ci
+          POSTGRES_USER: edulens_ci
+          POSTGRES_PASSWORD: ci_only_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U edulens_ci -d edulens_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14.4"
+          cache: pip
+          cache-dependency-path: apps/api/requirements.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Check dependency consistency
+        run: python -m pip check
+
+      - name: Run backend tests
+        run: python -m pytest -q
+
+      - name: Verify readiness against real PostgreSQL
+        run: |
+          python - <<'PY'
+          from fastapi.testclient import TestClient
+
+          from app.database import get_engine
+          from app.main import app
+
+          try:
+              with TestClient(app) as client:
+                  response = client.get("/health/ready")
+
+              assert response.status_code == 200, response.text
+              assert response.json() == {
+                  "status": "ok",
+                  "database": "ready",
+              }
+              print("Real PostgreSQL readiness check passed.")
+          finally:
+              get_engine().dispose()
+          PY
