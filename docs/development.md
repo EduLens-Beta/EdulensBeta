@@ -274,3 +274,25 @@ CI must generate them before running standalone TypeScript checking.
 
 The first CI run passed backend checks but failed frontend TypeScript
 checking because this generation step was missing.
+
+## Final foundation verification: 2026-10-14
+
+- GitHub Actions frontend and backend jobs passed.
+- Stopping PostgreSQL displayed Database unavailable.
+- Restarting PostgreSQL restored Connection successful.
+- Stopping FastAPI displayed Connection check failed.
+- Restarting FastAPI restored Connection successful.
+
+These manual checks verify failure and recovery through the frontend,
+Next.js health route, FastAPI, and PostgreSQL.
+
+### Start FastAPI from the repository root on Windows Git Bash
+
+This command uses the virtual environment directly; activation is not required:
+
+    ./apps/api/.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir apps/api --reload --reload-dir apps/api/app --host 127.0.0.1 --port 8000
+
+Keep the backend terminal running.
+
+The foundation is ready for pull-request review.
+The previously recorded development dependency advisory remains unresolved.
