@@ -261,3 +261,16 @@ Its test database is separate from local development data.
 
 The first CI run must be inspected on GitHub before this checkpoint
 is considered verified.
+
+### Type generation before standalone TypeScript checks
+
+On a fresh checkout, run these commands from apps/web:
+
+    npx --no-install next typegen
+    npx --no-install tsc --noEmit
+
+Next.js generates LayoutProps and other route helpers.
+CI must generate them before running standalone TypeScript checking.
+
+The first CI run passed backend checks but failed frontend TypeScript
+checking because this generation step was missing.
