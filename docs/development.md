@@ -115,3 +115,67 @@ The developer confirmed:
 - Interactive API documentation opened.
 
 Frontend-to-backend integration and PostgreSQL setup remain pending.
+
+## PostgreSQL setup
+
+Keep Docker Desktop running.
+
+From the repository root, create a local .env using the variable names in
+.env.example. Set a generated local POSTGRES_PASSWORD before starting the
+database. Never commit .env.
+
+Validate and start PostgreSQL:
+
+    docker compose config --quiet
+    docker compose up -d db
+    docker compose ps
+
+Wait for the db service to show healthy.
+
+Test a query:
+
+    docker compose exec db psql -U edulens -d edulens -c "SELECT current_database(), current_user, 1 AS connection_ok;"
+
+The database is available at 127.0.0.1:5432.
+PostgreSQL 17 stores its data in the postgres_data named volume.
+
+Stop the database while preserving its volume:
+
+    docker compose stop db
+
+Start it again:
+
+    docker compose up -d db
+
+Do not use docker compose down -v unless intentionally deleting local database
+data. Changing POSTGRES_PASSWORD in .env does not change the password of an
+already initialized database.
+
+## Backend database configuration
+
+app/config.py loads the repository-root .env by an absolute path.
+It validates database settings and stores the password as SecretStr.
+
+app/database.py creates a cached SQLAlchemy engine using Psycopg.
+Connections are returned to the pool after each readiness check.
+
+Health endpoints:
+
+- /health/live: API liveness; does not query the database.
+- /health/ready: runs SELECT 1 against PostgreSQL.
+  Returns HTTP 200 when ready, or HTTP 503 for database connection/query failures.
+
+The readiness endpoint does not return private database error details.
+
+## Database connection checkpoint: 2026-10-13
+
+- PostgreSQL container became healthy.
+- A database query returned the expected database, user, and connection value.
+- FastAPI returned {"status":"ok","database":"ready"} from /health/ready.
+- Three backend tests passed without warnings after installing httpx2.
+- pip check reported no broken requirements.
+
+Readiness tests simulate database success and failure.
+The running readiness endpoint was checked separately against real PostgreSQL.
+
+Frontend-to-backend integration, schema migrations, and CI remain pending.
