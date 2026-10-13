@@ -68,3 +68,50 @@ This finding remains unresolved. No forced downgrade was applied.
 
 Keep lint patterns controlled by project configuration. Recheck the advisory
 when updating dependencies and before production release.
+
+## Backend setup
+
+The initial backend was tested on Windows with Python 3.14.4 and Git Bash.
+
+From the repository root, create the environment on a fresh checkout:
+
+    py -3.14 -m venv apps/api/.venv
+
+Activate it and install the recorded dependencies:
+
+    source apps/api/.venv/Scripts/activate
+    cd apps/api
+    python -m pip install -r requirements.txt
+    python -m pip check
+
+requirements.txt records the initial development environment, including
+runtime packages, testing packages, and their installed dependencies.
+
+## Backend tests
+
+From apps/api with the environment activated:
+
+    python -m pytest -q
+
+## Run the backend
+
+From apps/api with the environment activated:
+
+    python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+
+Keep the terminal running. Ctrl+C stops the server.
+
+- Liveness: http://127.0.0.1:8000/health/live
+- API documentation: http://127.0.0.1:8000/docs
+
+The liveness endpoint reports whether the API responds.
+Database readiness is not implemented yet.
+
+## Backend checkpoint: 2026-10-13
+
+The developer confirmed:
+- The health endpoint test passed.
+- The running health endpoint returned the expected response.
+- Interactive API documentation opened.
+
+Frontend-to-backend integration and PostgreSQL setup remain pending.
