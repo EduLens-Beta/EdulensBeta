@@ -321,3 +321,38 @@ Checkpoint: 2026-10-26
 - Developer confirmed Alembic connected successfully.
 - Existing three backend tests passed.
 - No application tables or migration revisions have been created yet.
+
+## Initial account schema
+
+Migration: 07ccc7616ee0, create users and auth sessions.
+
+users stores account identity, normalized unique email, password hash,
+active status, verification timestamp, and creation/update timestamps.
+
+auth_sessions stores user ownership, a unique token hash, creation,
+expiry, and optional revocation timestamps. User deletion cascades to
+their sessions.
+
+Signup, login, password hashing, cookies, and session validation are
+not implemented by this schema checkpoint.
+
+## PostgreSQL schema tests
+
+A separate local edulens_test database must already exist.
+
+From apps/api, prepare its schema:
+
+    POSTGRES_DB=edulens_test ./.venv/Scripts/python.exe -m alembic upgrade head
+
+Run all tests:
+
+    POSTGRES_DB=edulens_test EDULENS_RUN_DB_TESTS=1 ./.venv/Scripts/python.exe -m pytest -q
+
+Database tests require explicit opt-in and a database name ending in
+_test or _ci. Each test rolls back its changes.
+
+Developer confirmed 13 local tests passed on 2026-10-26.
+
+CI now applies, downgrades, and reapplies migrations in its temporary
+database, checks for schema drift, and runs the PostgreSQL tests.
+The updated CI run must pass before this checkpoint is verified.

@@ -104,8 +104,15 @@ jobs:
       - name: Check dependency consistency
         run: python -m pip check
 
+      - name: Verify database migrations
+        run: |
+          python -m alembic upgrade head
+          python -m alembic downgrade base
+          python -m alembic upgrade head
+          python -m alembic check
+
       - name: Run backend tests
-        run: python -m pytest -q
+        run: EDULENS_RUN_DB_TESTS=1 python -m pytest -q
 
       - name: Verify readiness against real PostgreSQL
         run: |
