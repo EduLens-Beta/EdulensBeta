@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat/foundation
+      - "feat/**"
   pull_request:
     branches:
       - main
