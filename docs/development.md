@@ -296,3 +296,28 @@ Keep the backend terminal running.
 
 The foundation is ready for pull-request review.
 The previously recorded development dependency advisory remains unresolved.
+
+## Database migrations
+
+Alembic configuration is in apps/api/alembic.ini.
+Migration scripts belong in apps/api/migrations/versions.
+
+From apps/api, inspect the database revision:
+
+    ./.venv/Scripts/python.exe -m alembic current
+
+Migration connections load the existing repository-root .env through
+app.config. No database credentials belong in alembic.ini.
+
+Migrations use a separate connection with:
+- Five-second connection timeout.
+- Sixty-second statement timeout.
+- Five-second lock timeout.
+
+SQLAlchemy models share app.models.Base and its constraint naming convention.
+Future model modules must be imported so Alembic can discover their metadata.
+
+Checkpoint: 2026-10-26
+- Developer confirmed Alembic connected successfully.
+- Existing three backend tests passed.
+- No application tables or migration revisions have been created yet.
