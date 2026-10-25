@@ -379,3 +379,30 @@ Developer confirmed seven password tests passed on 2026-10-26.
 
 Password hashing is implemented. Signup validation, login, session handling,
 rate limiting, and browser authentication remain pending.
+
+## Signup API
+
+POST /auth/signup accepts name, email, and password.
+
+Validation:
+- Name: trimmed, 1-120 characters.
+- Email: validated, lowercased, maximum 254 characters.
+- Password: 15-128 characters; spaces and Unicode preserved.
+- Unexpected fields are rejected.
+
+Successful signup returns HTTP 201 with id, name, email, and created_at.
+Passwords and password hashes are excluded from responses.
+
+Account creation uses a database transaction.
+Duplicate email returns HTTP 409.
+Database availability failures return HTTP 503.
+Request-validation responses exclude raw input values and error context.
+
+Developer confirmed:
+- Twelve signup-schema tests passed.
+- Five signup API tests passed against PostgreSQL.
+- Password hashing uses the existing tested Argon2id implementation.
+
+Signup does not create a login session yet.
+Frontend signup, login, sessions, rate limiting, and email verification
+remain pending.
