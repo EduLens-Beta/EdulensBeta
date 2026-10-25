@@ -30,3 +30,21 @@ class SignupRequest(BaseModel):
         if len(normalized) > 254:
             raise ValueError("Email address is too long.")
         return normalized
+
+
+class LoginRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        hide_input_in_errors=True,
+    )
+
+    email: EmailStr
+    password: SecretStr = Field(min_length=1, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: EmailStr) -> str:
+        normalized = str(value).lower()
+        if len(normalized) > 254:
+            raise ValueError("Email address is too long.")
+        return normalized

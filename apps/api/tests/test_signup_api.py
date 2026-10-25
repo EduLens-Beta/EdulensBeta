@@ -119,3 +119,79 @@ def test_invalid_signup_is_rejected_without_saving_user(
     assert session.scalar(
         select(func.count()).select_from(User).where(User.email == email)
     ) == 0
+
+
+def test_login_creates_session_with_hashed_token(signup_context):
+    from datetime import datetime, UTC, timedelta
+
+    from app.auth.tokens import hash_session_token
+    from app.models import AuthSession
+
+    client, session = signup_context
+    payload = signup_payload()
+    account = client.post("/auth/signup", json=payload).json()
+    before = datetime.now(UTC)
+
+    response = client.post(
+        "/auth/login",
+        json={
+            "email": payload["email"].upper(),
+            "password": payload["password"],
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    token = body["session_token"]
+    assert len(token) == 43
+    assert body["user"] == account
+    assert payload["password"] not in response.text
+
+    stored = session.scalar(
+        select(AuthSession).where(
+            AuthSession.token_hash == hash_session_token(token)
+        )
+    )
+    assert stored is not None
+    assert stored.user_id == UUID(account["id"])
+    assert stored.token_hash != token
+    assert stored.revoked_at is None
+    assert before + timedelta(hours=24) <= stored.expires_at
+    assert stored.expires_at <= datetime.now(UTC) + timedelta(hours=24)
+    assert stored.token_hash not in response.text
+
+
+@pytest.mark.parametrize("case", ["wrong_password", "unknown_email", "inactive"])
+def test_invalid_login_returns_generic_error_without_session(
+    signup_context, case
+):
+    from app.models import AuthSession
+
+    client, session = signup_context
+    payload = signup_payload()
+    account = client.post("/auth/signup", json=payload).json()
+
+    if case == "inactive":
+        with session.begin():
+            user = session.get(User, UUID(account["id"]))
+            user.is_active = False
+
+    credentials = {
+        "email": payload["email"],
+        "password": payload["password"],
+    }
+    if case == "wrong_password":
+        credentials["password"] = "An incorrect password!"
+    elif case == "unknown_email":
+        credentials["email"] = f"missing-{uuid4().hex}@example.com"
+
+    response = client.post("/auth/login", json=credentials)
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid email or password."}
+    assert credentials["password"] not in response.text
+    assert session.scalar(
+        select(func.count()).select_from(AuthSession).where(
+            AuthSession.user_id == UUID(account["id"])
+        )
+    ) == 0
