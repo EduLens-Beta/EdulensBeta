@@ -320,7 +320,8 @@ Future model modules must be imported so Alembic can discover their metadata.
 Checkpoint: 2026-10-26
 - Developer confirmed Alembic connected successfully.
 - Existing three backend tests passed.
-- No application tables or migration revisions have been created yet.
+- At this checkpoint, no application tables or migration revisions existed.
+  The initial account migration was added afterward.
 
 ## Initial account schema
 
@@ -333,8 +334,8 @@ auth_sessions stores user ownership, a unique token hash, creation,
 expiry, and optional revocation timestamps. User deletion cascades to
 their sessions.
 
-Signup, login, password hashing, cookies, and session validation are
-not implemented by this schema checkpoint.
+This checkpoint introduced the schema only. Authentication behavior was
+implemented in subsequent steps documented below.
 
 ## PostgreSQL schema tests
 
@@ -377,8 +378,8 @@ Focused tests, from apps/api:
 
 Developer confirmed seven password tests passed on 2026-10-26.
 
-Password hashing is implemented. Signup validation, login, session handling,
-rate limiting, and browser authentication remain pending.
+This checkpoint introduced password hashing. Signup, login, and session
+handling were implemented afterward. Rate limiting remains pending.
 
 ## Signup API
 
@@ -403,6 +404,82 @@ Developer confirmed:
 - Five signup API tests passed against PostgreSQL.
 - Password hashing uses the existing tested Argon2id implementation.
 
-Signup does not create a login session yet.
-Frontend signup, login, sessions, rate limiting, and email verification
-remain pending.
+Signup creates an account without signing the user in automatically.
+Web signup, login, and sessions are documented below. Rate limiting and
+email verification remain pending.
+
+## Login and database sessions
+
+POST /auth/login accepts email and password.
+Email normalization matches signup; password whitespace and Unicode are preserved.
+
+Successful login returns a session token, its expiry, and public account fields.
+Sessions expire 24 hours after login.
+
+Session tokens contain 32 cryptographically random bytes, encoded as URL-safe
+text. PostgreSQL stores only the SHA-256 token hash.
+
+Unknown emails, incorrect passwords, and inactive accounts return the same
+HTTP 401 message. Unknown emails still perform Argon2 verification against
+a dummy hash.
+
+GET /auth/me requires Authorization: Bearer <session-token>.
+It returns public account fields only when the session is unexpired,
+unrevoked, and belongs to an active user.
+
+POST /auth/logout revokes the supplied session. Repeating logout is safe.
+Other sessions belonging to the same user remain active.
+
+## Browser authentication
+
+Pages:
+- /signup: create an account.
+- /login: sign in.
+- /account: check account identity and sign out.
+
+The browser calls Next.js routes under /api/auth.
+Next.js forwards requests to FastAPI using the private API_BASE_URL setting.
+
+The login route stores the token in the edulens_session cookie:
+- HttpOnly.
+- SameSite=Lax.
+- Path=/.
+- Expiry supplied by the backend.
+- Secure in production; local HTTP development is supported.
+
+The token is not returned in the web login response or stored in localStorage.
+Account checks and logout read the cookie on the Next.js server and forward
+the token to FastAPI in the Authorization header.
+
+Web login and logout require the Origin header to match the request origin.
+Authentication route responses use Cache-Control: no-store.
+
+An invalid or expired session returns HTTP 401 from the account-check route.
+Temporary backend failures are shown as service errors rather than successful
+sign-out or confirmed session expiry.
+
+Logout clears the browser cookie after backend revocation is confirmed.
+If revocation cannot be confirmed, the user can retry.
+
+The /account page shell is statically rendered. Private account data is fetched
+after loading and is authorized by FastAPI on every account request.
+
+## Authentication verification checkpoint: 2026-10-27
+
+Developer confirmed:
+- 64 backend tests passed, including PostgreSQL integration tests.
+- Frontend lint passed with zero warnings.
+- Next.js route type generation and TypeScript checks passed.
+- Production build passed on Next.js 16.4.3.
+- Browser login rejected an incorrect password.
+- Successful login displayed the account name and email.
+- Refresh preserved the signed-in session.
+- Logout returned to the login page.
+- Opening /account after logout showed the signed-out state.
+
+Next.js and eslint-config-next were upgraded together to 16.4.3.
+The installation reported zero npm audit vulnerabilities at that checkpoint.
+
+Browser checks above were manual; they are not automated browser tests.
+Rate limiting, email verification, password recovery, and automated browser
+authentication tests remain pending.
