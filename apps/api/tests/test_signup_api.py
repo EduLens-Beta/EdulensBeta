@@ -343,3 +343,33 @@ def test_logout_without_valid_session_is_safe(
 
     assert response.status_code == 204
     assert response.content == b""
+
+
+def test_auth_success_responses_are_not_cached(signup_context):
+    client, session = signup_context
+    payload = signup_payload()
+
+    signup = client.post("/auth/signup", json=payload)
+    assert signup.status_code == 201
+    assert signup.headers["cache-control"] == "no-store"
+
+    login = client.post(
+        "/auth/login",
+        json={
+            "email": payload["email"],
+            "password": payload["password"],
+        },
+    )
+    assert login.status_code == 200
+    assert login.headers["cache-control"] == "no-store"
+
+    headers = {
+        "Authorization": f"Bearer {login.json()['session_token']}"
+    }
+    account = client.get("/auth/me", headers=headers)
+    assert account.status_code == 200
+    assert account.headers["cache-control"] == "no-store"
+
+    logout = client.post("/auth/logout", headers=headers)
+    assert logout.status_code == 204
+    assert logout.headers["cache-control"] == "no-store"

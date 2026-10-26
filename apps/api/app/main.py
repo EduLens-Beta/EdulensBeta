@@ -77,3 +77,11 @@ async def validation_error_handler(
 
 
 app.include_router(auth_router)
+
+
+@app.middleware("http")
+async def prevent_auth_response_caching(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path == "/auth" or request.url.path.startswith("/auth/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response

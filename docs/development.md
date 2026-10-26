@@ -483,3 +483,8 @@ The installation reported zero npm audit vulnerabilities at that checkpoint.
 Browser checks above were manual; they are not automated browser tests.
 Rate limiting, email verification, password recovery, and automated browser
 authentication tests remain pending.
+
+Authentication response caching:
+- FastAPI /auth responses explicitly send Cache-Control: no-store.
+- Tests cover successful authentication and rejected requests.
+- Developer confirmed 68 backend tests passed on 2026-10-27.
