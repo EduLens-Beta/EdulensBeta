@@ -2,13 +2,13 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import get_db
+from app.auth.dependencies import get_current_user, get_db
 from app.auth.schemas import LoginRequest, SignupRequest
 from app.auth.tokens import generate_session_token, hash_session_token
 from app.models import AuthSession, User
@@ -135,3 +135,50 @@ def login(
         ) from None
 
     return result
+
+
+@router.get(
+    "/me",
+    response_model=SignupResponse,
+    summary="Get the signed-in account",
+)
+def get_account(
+    user: Annotated[User, Depends(get_current_user)],
+) -> SignupResponse:
+    return SignupResponse.model_validate(user)
+
+
+@router.post(
+    "/logout",
+    status_code=204,
+    response_class=Response,
+    summary="Revoke the current session",
+)
+def logout(
+    db: Annotated[Session, Depends(get_db)],
+    authorization: Annotated[str | None, Header()] = None,
+) -> Response:
+    if authorization is not None:
+        scheme, separator, token = authorization.partition(" ")
+        if separator and scheme.lower() == "bearer" and len(token) == 43:
+            try:
+                db.execute(
+                    update(AuthSession)
+                    .where(
+                        AuthSession.token_hash == hash_session_token(token),
+                        AuthSession.revoked_at.is_(None),
+                    )
+                    .values(revoked_at=func.now())
+                )
+                db.commit()
+            except SQLAlchemyError:
+                db.rollback()
+                raise HTTPException(
+                    status_code=503,
+                    detail="Sign-out is temporarily unavailable.",
+                ) from None
+
+    return Response(
+        status_code=204,
+        headers={"Cache-Control": "no-store"},
+    )

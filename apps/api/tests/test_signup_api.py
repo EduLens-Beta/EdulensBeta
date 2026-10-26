@@ -195,3 +195,151 @@ def test_invalid_login_returns_generic_error_without_session(
             AuthSession.user_id == UUID(account["id"])
         )
     ) == 0
+
+
+def test_me_returns_signed_in_account(signup_context):
+    client, session = signup_context
+    payload = signup_payload()
+    account = client.post("/auth/signup", json=payload).json()
+    login = client.post(
+        "/auth/login",
+        json={
+            "email": payload["email"],
+            "password": payload["password"],
+        },
+    )
+    assert login.status_code == 200
+    token = login.json()["session_token"]
+
+    response = client.get(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == account
+    assert token not in response.text
+    assert payload["password"] not in response.text
+
+
+@pytest.mark.parametrize(
+    "case",
+    ["missing", "malformed", "unknown", "expired", "revoked", "inactive"],
+)
+def test_me_rejects_invalid_sessions(signup_context, case):
+    from datetime import UTC, datetime, timedelta
+
+    from app.auth.tokens import hash_session_token
+    from app.models import AuthSession
+
+    client, session = signup_context
+    payload = signup_payload()
+    account = client.post("/auth/signup", json=payload).json()
+    login = client.post(
+        "/auth/login",
+        json={
+            "email": payload["email"],
+            "password": payload["password"],
+        },
+    )
+    assert login.status_code == 200
+    token = login.json()["session_token"]
+
+    with session.begin():
+        stored = session.scalar(
+            select(AuthSession).where(
+                AuthSession.token_hash == hash_session_token(token)
+            )
+        )
+        assert stored is not None
+        now = datetime.now(UTC)
+
+        if case == "expired":
+            stored.created_at = now - timedelta(days=2)
+            stored.expires_at = now - timedelta(days=1)
+        elif case == "revoked":
+            stored.revoked_at = now
+        elif case == "inactive":
+            user = session.get(User, UUID(account["id"]))
+            assert user is not None
+            user.is_active = False
+
+    headers = {"Authorization": f"Bearer {token}"}
+    if case == "missing":
+        headers = {}
+    elif case == "malformed":
+        headers = {"Authorization": "Bearer malformed-token"}
+    elif case == "unknown":
+        headers = {"Authorization": "Bearer " + "a" * 43}
+
+    response = client.get("/auth/me", headers=headers)
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Authentication required."}
+    assert response.headers["www-authenticate"] == "Bearer"
+    assert token not in response.text
+
+
+def test_logout_revokes_only_current_session(signup_context):
+    from app.auth.tokens import hash_session_token
+    from app.models import AuthSession
+
+    client, session = signup_context
+    payload = signup_payload()
+    client.post("/auth/signup", json=payload)
+    credentials = {
+        "email": payload["email"],
+        "password": payload["password"],
+    }
+
+    first = client.post("/auth/login", json=credentials)
+    second = client.post("/auth/login", json=credentials)
+    assert first.status_code == second.status_code == 200
+
+    first_token = first.json()["session_token"]
+    second_token = second.json()["session_token"]
+    assert first_token != second_token
+
+    first_headers = {"Authorization": f"Bearer {first_token}"}
+    second_headers = {"Authorization": f"Bearer {second_token}"}
+
+    assert client.get("/auth/me", headers=first_headers).status_code == 200
+
+    response = client.post("/auth/logout", headers=first_headers)
+    assert response.status_code == 204
+    assert response.content == b""
+    assert response.headers["cache-control"] == "no-store"
+
+    assert client.get("/auth/me", headers=first_headers).status_code == 401
+    assert client.get("/auth/me", headers=second_headers).status_code == 200
+
+    assert client.post(
+        "/auth/logout", headers=first_headers
+    ).status_code == 204
+
+    stored = session.scalar(
+        select(AuthSession).where(
+            AuthSession.token_hash == hash_session_token(first_token)
+        )
+    )
+    assert stored is not None
+    assert stored.revoked_at is not None
+
+
+@pytest.mark.parametrize(
+    "authorization",
+    [None, "Bearer malformed", "Basic abc", "Bearer " + "a" * 43],
+)
+def test_logout_without_valid_session_is_safe(
+    signup_context, authorization
+):
+    client, session = signup_context
+    headers = (
+        {"Authorization": authorization}
+        if authorization is not None else {}
+    )
+
+    response = client.post("/auth/logout", headers=headers)
+
+    assert response.status_code == 204
+    assert response.content == b""
