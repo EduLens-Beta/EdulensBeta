@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat/foundation
+      - "feat/**"
   pull_request:
     branches:
       - main
@@ -16,7 +16,7 @@ permissions:
 jobs:
   frontend:
     name: Frontend checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     defaults:
@@ -56,7 +56,7 @@ jobs:
 
   backend:
     name: Backend checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     defaults:
@@ -104,8 +104,15 @@ jobs:
       - name: Check dependency consistency
         run: python -m pip check
 
+      - name: Verify database migrations
+        run: |
+          python -m alembic upgrade head
+          python -m alembic downgrade base
+          python -m alembic upgrade head
+          python -m alembic check
+
       - name: Run backend tests
-        run: python -m pytest -q
+        run: EDULENS_RUN_DB_TESTS=1 python -m pytest -q
 
       - name: Verify readiness against real PostgreSQL
         run: |

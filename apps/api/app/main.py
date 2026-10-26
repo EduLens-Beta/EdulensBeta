@@ -1,8 +1,11 @@
 from typing import Annotated, Literal
 
-from fastapi import Depends, FastAPI, Response
+from fastapi import Depends, FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from app.auth.routes import router as auth_router
 from app.database import database_is_ready
 
 
@@ -52,3 +55,33 @@ def check_readiness(
         )
 
     return ReadinessResponse(status="ok", database="ready")
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(
+    request: Request,
+    error: RequestValidationError,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": [
+                {
+                    "loc": item["loc"],
+                    "msg": item["msg"],
+                    "type": item["type"],
+                }
+                for item in error.errors()
+            ]
+        },
+    )
+
+
+app.include_router(auth_router)
+
+
+@app.middleware("http")
+async def prevent_auth_response_caching(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path == "/auth" or request.url.path.startswith("/auth/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
