@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from app.auth.routes import router as auth_router
 from app.database import database_is_ready
+from app.student.routes import router as student_router
 
 
 class LivenessResponse(BaseModel):
@@ -77,11 +78,15 @@ async def validation_error_handler(
 
 
 app.include_router(auth_router)
+app.include_router(student_router)
 
 
 @app.middleware("http")
 async def prevent_auth_response_caching(request: Request, call_next):
     response = await call_next(request)
-    if request.url.path == "/auth" or request.url.path.startswith("/auth/"):
+    if (
+        request.url.path in {"/auth", "/student"}
+        or request.url.path.startswith(("/auth/", "/student/"))
+    ):
         response.headers["Cache-Control"] = "no-store"
     return response

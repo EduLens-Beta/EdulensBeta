@@ -40,7 +40,7 @@ export default function LoginForm() {
 
       if (response.status === 200) {
         form.reset();
-        router.replace("/account");
+        router.replace("/student");
         return;
       }
 
