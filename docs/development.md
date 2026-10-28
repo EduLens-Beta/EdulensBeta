@@ -488,3 +488,34 @@ Authentication response caching:
 - FastAPI /auth responses explicitly send Cache-Control: no-store.
 - Tests cover successful authentication and rejected requests.
 - Developer confirmed 68 backend tests passed on 2026-10-27.
+
+## Student onboarding
+
+Signup remains the same for everyone. After login, /student checks the
+authenticated student's saved education stage. Students without a selection
+continue to /welcome.
+
+Education stages:
+- Class 6–8
+- Class 9–10
+- College / HSC
+- University
+
+Migration d800b2b19fc1 adds student_profiles with one profile per account.
+GET /student/profile reads the current student's selection.
+PUT /student/profile creates or updates it.
+Both endpoints require authentication and send Cache-Control: no-store.
+
+The web route /api/student/profile uses the existing HttpOnly session cookie.
+Profile updates require a matching Origin header.
+The welcome page saves the selection before continuing to /student.
+Students can change their education stage from their student home.
+
+Student home content varies by education stage. Personalised activities
+remain in development.
+
+Verification:
+- 13 student-profile tests passed.
+- Complete backend suite: 81 tests passed.
+- Frontend lint, route type generation, TypeScript, and production build passed.
+- Developer confirmed the browser onboarding flow worked.
