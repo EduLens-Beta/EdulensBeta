@@ -9,6 +9,7 @@ import {
   isEducationStage,
   type EducationStage,
 } from "./education-stages";
+import SchoolExperience from "./school-experience";
 import styles from "./student.module.css";
 
 type Screen = "welcome" | "home";
@@ -329,7 +330,12 @@ export default function StudentExperience({ screen }: { screen: Screen }) {
         )}
 
         {state.status === "ready" && screen === "home" &&
-          stage && introduction && (
+          state.stage === "class_9_10" && (
+            <SchoolExperience name={state.account.name} />
+          )}
+
+        {state.status === "ready" && screen === "home" &&
+          stage && introduction && stage.value !== "class_9_10" && (
             <section className={styles.home}>
               <div className={styles.homeTop}>
                 <span className={styles.stageBadge}>{stage.label}</span>
