@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, String, Text, Uuid
-from sqlalchemy import func, true
+from sqlalchemy import false, func, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -35,6 +35,9 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=true()
+    )
+    is_admin: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=false()
     )
     email_verified_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True

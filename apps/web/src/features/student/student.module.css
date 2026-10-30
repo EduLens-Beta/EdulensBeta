@@ -310,3 +310,129 @@
     font-size: 19px;
   }
 }
+
+/* Class and study-group selection */
+.schoolSetup {
+  max-width: 960px;
+  margin-inline: auto;
+}
+.schoolSetup .intro .greeting {
+  font-size: clamp(30px, 4vw, 46px);
+}
+.schoolFieldset {
+  min-width: 0;
+  margin: 30px 0 0;
+  padding: 0;
+  border: 0;
+}
+.schoolFieldset legend {
+  margin-bottom: 14px;
+  font-size: 17px;
+  font-weight: 650;
+}
+.classChoices, .groupChoices {
+  display: grid;
+  gap: 14px;
+}
+.classChoices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.groupChoices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.schoolChoice {
+  position: relative;
+  min-width: 0;
+  cursor: pointer;
+}
+.schoolOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 100%;
+  min-height: 92px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fffefa;
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 1.5;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.schoolOption > span {
+  flex-shrink: 0;
+  color: var(--teal);
+}
+.schoolChoice:hover .schoolOption { border-color: #8aafa3; }
+.radio:checked + .schoolOption {
+  border-color: var(--teal);
+  background: #eef5ef;
+  box-shadow: inset 0 0 0 1px var(--teal);
+}
+.radio:focus-visible + .schoolOption {
+  outline: 3px solid var(--teal);
+  outline-offset: 5px;
+}
+.radio:disabled + .schoolOption { cursor: wait; }
+.quietButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--teal);
+  font-size: 14px;
+  font-weight: 600;
+}
+.quietButton:hover { text-decoration: underline; }
+.quietButton:disabled { opacity: .6; cursor: wait; }
+.setupBack { margin-top: 28px; text-align: center; }
+.goalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 36px;
+}
+.goalCard {
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fffefa;
+}
+.goalCard:first-child { background: #eef5ef; }
+.goalNumber {
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.goalCard h2 {
+  margin: 22px 0 12px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -.8px;
+}
+.goalCard p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+.preparing {
+  display: inline-block;
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  .groupChoices, .goalGrid { grid-template-columns: 1fr; }
+  .schoolOption { min-height: 76px; padding: 20px; font-size: 17px; }
+  .goalCard { padding: 24px; }
+  .goalCard h2 { font-size: 25px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .schoolOption { transition: none; }
+}

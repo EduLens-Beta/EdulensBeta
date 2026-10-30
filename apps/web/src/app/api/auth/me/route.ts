@@ -55,7 +55,9 @@ export async function GET() {
       !("name" in account) ||
       typeof account.name !== "string" ||
       !("email" in account) ||
-      typeof account.email !== "string"
+      typeof account.email !== "string" ||
+      !("is_admin" in account) ||
+      typeof account.is_admin !== "boolean"
     ) {
       return reply({ message: "The account response could not be read." }, 502);
     }
@@ -66,6 +68,7 @@ export async function GET() {
           id: account.id,
           name: account.name,
           email: account.email,
+          is_admin: account.is_admin,
         },
       },
       200,
