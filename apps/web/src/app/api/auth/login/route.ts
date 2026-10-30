@@ -88,9 +88,21 @@ export async function POST(request: Request) {
       !isRecord(result) ||
       typeof result.session_token !== "string" ||
       !/^[A-Za-z0-9_-]{43}$/.test(result.session_token) ||
-      typeof result.expires_at !== "string"
+      typeof result.expires_at !== "string" ||
+      !isRecord(result.user) ||
+      typeof result.user.is_admin !== "boolean"
     ) {
       return reply("Sign-in could not be confirmed. Please try again.", 502);
+    }
+
+    if (
+      request.headers.get("x-edulens-login-mode") === "admin" &&
+      !result.user.is_admin
+    ) {
+      return reply(
+        "Administrator access required. Please use Student sign in.",
+        403,
+      );
     }
 
     const expires = new Date(result.expires_at);
@@ -108,7 +120,13 @@ export async function POST(request: Request) {
       expires,
     });
 
-    return reply("You are signed in.", 200);
+    return NextResponse.json(
+      {
+        message: "You are signed in.",
+        destination: result.user.is_admin ? "/admin" : "/student",
+      },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    );
   } catch {
     return reply("Sign-in could not be confirmed. Please try again.", 502);
   }

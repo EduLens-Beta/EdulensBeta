@@ -8,6 +8,7 @@ type User = {
   id: string;
   name: string;
   email: string;
+  is_admin: boolean;
 };
 
 type State =
@@ -35,12 +36,19 @@ function readUser(value: unknown): User | null {
     !("name" in user) ||
     typeof user.name !== "string" ||
     !("email" in user) ||
-    typeof user.email !== "string"
+    typeof user.email !== "string" ||
+    !("is_admin" in user) ||
+    typeof user.is_admin !== "boolean"
   ) {
     return null;
   }
 
-  return { id: user.id, name: user.name, email: user.email };
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    is_admin: user.is_admin,
+  };
 }
 
 export default function AccountPanel() {
@@ -165,6 +173,14 @@ export default function AccountPanel() {
       <p className="mt-3 break-words text-slate-600">{state.user.email}</p>
       <p className="mt-5 text-sm text-slate-600">
         You are signed in to EduLens.
+      </p>
+      <p className="mt-4">
+        <Link
+          href={state.user.is_admin ? "/admin" : "/student"}
+          className="font-semibold text-teal-800 underline"
+        >
+          {state.user.is_admin ? "Open admin dashboard" : "Open student space"}
+        </Link>
       </p>
 
       <p role="status" aria-live="polite" className="mt-4 text-sm text-red-700">

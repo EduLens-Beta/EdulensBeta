@@ -144,7 +144,7 @@ def test_login_creates_session_with_hashed_token(signup_context):
     body = response.json()
     token = body["session_token"]
     assert len(token) == 43
-    assert body["user"] == account
+    assert body["user"] == {**account, "is_admin": False}
     assert payload["password"] not in response.text
 
     stored = session.scalar(
@@ -217,7 +217,7 @@ def test_me_returns_signed_in_account(signup_context):
     )
 
     assert response.status_code == 200
-    assert response.json() == account
+    assert response.json() == {**account, "is_admin": False}
     assert token not in response.text
     assert payload["password"] not in response.text
 

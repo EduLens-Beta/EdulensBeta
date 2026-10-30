@@ -519,3 +519,80 @@ Verification:
 - Complete backend suite: 81 tests passed.
 - Frontend lint, route type generation, TypeScript, and production build passed.
 - Developer confirmed the browser onboarding flow worked.
+
+## Administration
+
+Migration 190636b584e4 adds users.is_admin, defaulting to false.
+Signup cannot assign administrator access.
+
+GET /admin/accounts requires an active, authenticated administrator.
+It returns a paginated account list with education details.
+Password hashes and session tokens are excluded.
+Admin API responses use Cache-Control: no-store.
+
+The web dashboard is available at /admin.
+It displays total registrations, account details, and pagination.
+Registration totals do not indicate online activity.
+
+Normal login routes administrators to /admin and students to /student.
+The account page provides the appropriate dashboard link.
+
+Dedicated administrator sign-in is available at /admin/login.
+Ordinary accounts attempting administrator sign-in remain on that page
+with an access-required message. No new browser session cookie is set.
+The landing page does not display an administrator login link.
+
+From apps/api, grant or revoke access to an existing account:
+    ./.venv/Scripts/python.exe -m app.admin.manage grant
+    ./.venv/Scripts/python.exe -m app.admin.manage revoke
+
+The command prompts for the account email.
+Administrator permissions are checked by the backend on every admin request.
+
+Verification:
+- 124 backend tests passed.
+- Frontend lint, TypeScript, route generation, and production build passed
+  during implementation.
+- Developer confirmed administrator sign-in and ordinary-account rejection.
+
+A separate admin subdomain remains planned for deployment.
+EOFcd ~/EduLens/EduLensBeta
+
+cat >> docs/development.md <<'EOF'
+
+## Administration
+
+Migration 190636b584e4 adds users.is_admin, defaulting to false.
+Signup cannot assign administrator access.
+
+GET /admin/accounts requires an active, authenticated administrator.
+It returns a paginated account list with education details.
+Password hashes and session tokens are excluded.
+Admin API responses use Cache-Control: no-store.
+
+The web dashboard is available at /admin.
+It displays total registrations, account details, and pagination.
+Registration totals do not indicate online activity.
+
+Normal login routes administrators to /admin and students to /student.
+The account page provides the appropriate dashboard link.
+
+Dedicated administrator sign-in is available at /admin/login.
+Ordinary accounts attempting administrator sign-in remain on that page
+with an access-required message. No new browser session cookie is set.
+The landing page does not display an administrator login link.
+
+From apps/api, grant or revoke access to an existing account:
+    ./.venv/Scripts/python.exe -m app.admin.manage grant
+    ./.venv/Scripts/python.exe -m app.admin.manage revoke
+
+The command prompts for the account email.
+Administrator permissions are checked by the backend on every admin request.
+
+Verification:
+- 124 backend tests passed.
+- Frontend lint, TypeScript, route generation, and production build passed
+  during implementation.
+- Developer confirmed administrator sign-in and ordinary-account rejection.
+
+A separate admin subdomain remains planned for deployment.

@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
 
-export default function LoginForm() {
+export default function LoginForm({
+  adminMode = false,
+}: {
+  adminMode?: boolean;
+}) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -31,7 +35,10 @@ export default function LoginForm() {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-EduLens-Login-Mode": adminMode ? "admin" : "student",
+        },
         body: JSON.stringify({ email, password }),
         signal: AbortSignal.timeout(15000),
       });
@@ -39,8 +46,22 @@ export default function LoginForm() {
       const result: unknown = await response.json();
 
       if (response.status === 200) {
+        if (
+          typeof result !== "object" ||
+          result === null ||
+          !("destination" in result) ||
+          (result.destination !== "/admin" && result.destination !== "/student")
+        ) {
+          throw new Error("Sign-in destination could not be confirmed.");
+        }
+        if (adminMode && result.destination !== "/admin") {
+          setMessage(
+            "Administrator access required. Please use Student sign in.",
+          );
+          return;
+        }
         form.reset();
-        router.replace("/student");
+        router.replace(result.destination);
         return;
       }
 
@@ -110,12 +131,21 @@ export default function LoginForm() {
         </button>
       </fieldset>
 
+      {adminMode ? (
+        <p className="mt-6 text-center text-sm text-slate-600">
+          Are you a student?{" "}
+          <Link href="/login" className="font-semibold text-teal-800 underline">
+            Student sign in
+          </Link>
+        </p>
+      ) : (
       <p className="mt-6 text-center text-sm text-slate-600">
         New to EduLens?{" "}
         <Link href="/signup" className="font-semibold text-indigo-700 underline">
           Create an account
         </Link>
       </p>
+      )}
     </form>
   );
 }

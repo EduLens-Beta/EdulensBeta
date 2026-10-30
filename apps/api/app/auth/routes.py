@@ -76,10 +76,14 @@ def signup(
 _DUMMY_PASSWORD_HASH = hash_password(generate_session_token())
 
 
+class AccountResponse(SignupResponse):
+    is_admin: bool
+
+
 class LoginResponse(BaseModel):
     session_token: str
     expires_at: datetime
-    user: SignupResponse
+    user: AccountResponse
 
 
 @router.post(
@@ -126,7 +130,7 @@ def login(
             result = LoginResponse(
                 session_token=token,
                 expires_at=expires_at,
-                user=SignupResponse.model_validate(user),
+                user=AccountResponse.model_validate(user),
             )
     except SQLAlchemyError:
         raise HTTPException(
@@ -139,13 +143,13 @@ def login(
 
 @router.get(
     "/me",
-    response_model=SignupResponse,
+    response_model=AccountResponse,
     summary="Get the signed-in account",
 )
 def get_account(
     user: Annotated[User, Depends(get_current_user)],
-) -> SignupResponse:
-    return SignupResponse.model_validate(user)
+) -> AccountResponse:
+    return AccountResponse.model_validate(user)
 
 
 @router.post(
