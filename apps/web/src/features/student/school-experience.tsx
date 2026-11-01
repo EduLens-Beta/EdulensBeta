@@ -13,6 +13,7 @@ import {
   type SchoolDetails,
   type StudyGroup,
 } from "./school-details";
+import ScienceSkillsHome from "@/features/skills/science-skills-home";
 import styles from "./student.module.css";
 
 type State =
@@ -269,7 +270,13 @@ export default function SchoolExperience({ name }: { name: string }) {
   }
 
   return (
-    <section className={styles.home}>
+    <section className={
+      details.study_group === "science"
+        ? `${styles.home} ${styles.scienceHome}`
+        : styles.home
+    }>
+      {details.study_group !== "science" && (
+        <>
       <div className={styles.homeTop}>
         <span className={styles.stageBadge}>
           Class {details.school_class} · {groupLabel}
@@ -282,40 +289,28 @@ export default function SchoolExperience({ name }: { name: string }) {
 
       <p className={styles.greeting}>Hello, {name}.</p>
       <h1 ref={headingRef} tabIndex={-1}>
-        Your studies today. Your next chapter tomorrow.
+        Small skills today. More possibilities tomorrow.
       </h1>
       <p className={styles.subtitle}>
-        A space for your SSC preparation and college ambitions.
+        Explore interests, build practical skills, and grow alongside your studies.
       </p>
 
+        </>
+      )}
+
       {details.study_group === "science" ? (
-        <div className={styles.goalGrid}>
-          <section className={styles.goalCard}>
-            <span className={styles.goalNumber} aria-hidden="true">01</span>
-            <h2>My SSC goal</h2>
-            <p>
-              Set your target and build a clearer picture of what to work on
-              in your studies.
-            </p>
-            <span className={styles.preparing}>Goal setting is coming next</span>
-          </section>
-          <section className={styles.goalCard}>
-            <span className={styles.goalNumber} aria-hidden="true">02</span>
-            <h2>My college goals</h2>
-            <p>
-              Keep your college ambitions together and understand the
-              preparation ahead.
-            </p>
-            <span className={styles.preparing}>College planning is coming next</span>
-          </section>
-        </div>
+        <ScienceSkillsHome
+          name={name}
+          schoolClass={details.school_class}
+          onEditSchool={() => setEditing(true)}
+        />
       ) : (
         <div className={styles.upcoming}>
           <p className={styles.eyebrow}>YOUR DETAILS ARE SAVED</p>
           <h2>Your {groupLabel} space is taking shape.</h2>
           <p>
-            We’re preparing SSC and college-planning tools for your group.
-            You won’t be shown Science-specific study guidance.
+            We’re preparing skill-building journeys for your group.
+            Your saved class and group will help shape your experience.
           </p>
         </div>
       )}

@@ -436,3 +436,71 @@
 @media (prefers-reduced-motion: reduce) {
   .schoolOption { transition: none; }
 }
+
+.scienceHome { max-width: 1160px; }
+
+/* Student dashboard shell */
+.dashboardPage .header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: 100%;
+  min-height: 76px;
+  padding: 12px 28px;
+  background: #fffefa;
+}
+.dashboardPage .main {
+  width: 100%;
+  padding: 0;
+}
+.dashboardPage .scienceHome {
+  width: 100%;
+  max-width: none;
+}
+.dashboardPage .footer { display: none; }
+.dashboardPage .schoolSetup {
+  padding: 42px 24px;
+}
+.dashboardPage .scienceHome > .setupBack { display: none; }
+.headerActions { display: flex; align-items: center; gap: 26px; }
+.accountMenu { position: relative; color: var(--teal); font-size: 14px; }
+.accountMenu summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+.accountMenu summary::-webkit-details-marker { display: none; }
+.accountMenu summary::after { content: "⌄"; }
+.accountMenu summary:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 4px;
+}
+.accountMenu > div {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: 220px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffefa;
+}
+.accountMenu > div a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  color: var(--ink);
+}
+.accountMenu > div a:hover { background: #eef5ef; }
+@media (max-width: 600px) {
+  .dashboardPage .header { padding-inline: 16px; }
+  .headerActions { gap: 16px; }
+  .accountMenu { font-size: 13px; }
+}

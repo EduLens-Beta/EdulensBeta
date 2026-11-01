@@ -232,13 +232,25 @@ export default function StudentExperience({ screen }: { screen: Screen }) {
   const introduction = stage ? stageIntroductions[stage.value] : null;
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${
+      screen === "home" && state.status === "ready" &&
+      state.stage === "class_9_10" ? styles.dashboardPage : ""
+    }`}>
       <header className={styles.header}>
         <Link href="/" className={styles.brand} aria-label="EduLens home">
           <span className={styles.brandMark} aria-hidden="true">e</span>
           EduLens<span className={styles.brandDot}>.</span>
         </Link>
-        <Link href="/account" className={styles.accountLink}>Your account</Link>
+        <div className={styles.headerActions}>
+          <Link href="/" className={styles.accountLink}>Home</Link>
+          <details className={styles.accountMenu}>
+            <summary>Your account</summary>
+            <div>
+              <Link href="/account">Account &amp; sign out</Link>
+              <Link href="/welcome">Education stage</Link>
+            </div>
+          </details>
+        </div>
       </header>
 
       <main className={styles.main}>

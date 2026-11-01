@@ -1,0 +1,273 @@
+.journey {
+  width: 100%;
+  min-width: 0;
+  color: #18313c;
+}
+.description {
+  margin: 8px 0 24px;
+  color: #75818a;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.heading {
+  margin: 20px 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+}
+.back {
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #08685c;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.path {
+  position: relative;
+  width: 100%;
+  max-width: 940px;
+  margin-inline: auto;
+  background: #fcfdfc;
+  border-radius: 24px;
+}
+.line {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.line path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+.line .roadEdge { stroke: none; }
+.line .roadSurface {
+  stroke: #e0e5e3;
+  stroke-width: 7;
+}
+.line .roadMarks { stroke: none; }
+.steps {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  position: relative;
+  height: 180px;
+}
+.stepButton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.node {
+  position: absolute;
+  top: 60px;
+  left: calc(28% - 30px);
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border: 3px solid #cbd3d8;
+  border-radius: 50%;
+  background: #edf0f2;
+  color: #83919c;
+  box-shadow: 0 5px 12px #17344310;
+  transition: transform 160ms ease;
+}
+.pinNumber {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #9aa6b0;
+  color: white;
+  font-size: 12px;
+  font-weight: 750;
+}
+.node::before {
+  content: "◇";
+  font-size: 27px;
+  line-height: 1;
+}
+.copy {
+  position: absolute;
+  top: 90px;
+  left: calc(28% + 48px);
+  right: 5%;
+  display: grid;
+  gap: 5px;
+  transform: translateY(-50%);
+}
+.copy strong {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+}
+.copy .action {
+  color: #7b8990;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.step:nth-child(even) .node {
+  left: calc(72% - 30px);
+}
+.step:nth-child(even) .copy {
+  left: 5%;
+  right: calc(28% + 48px);
+  text-align: right;
+}
+.currentLabel {
+  color: #2871cf;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.7px;
+}
+.stepButton[aria-current="step"] .node {
+  border-color: #77b6f5;
+  background: #e1efff;
+  color: #347ee0;
+  box-shadow: 0 0 0 5px #edf5ff, 0 7px 18px #347ee01a;
+}
+.stepButton[aria-current="step"] .node::before {
+  content: "★";
+  font-size: 28px;
+}
+.stepButton[aria-current="step"] .pinNumber {
+  background: #347ee0;
+}
+.stepButton[aria-current="step"] .copy strong {
+  color: #2866b4;
+}
+.stepButton:focus-visible {
+  outline: 2px solid #347ee0;
+  outline-offset: -4px;
+  border-radius: 16px;
+}
+@media (hover: hover) {
+  .stepButton:hover .node { transform: translateY(-4px); }
+  .stepButton:hover .copy strong { color: #2871cf; }
+}
+.stepButton:active .node { transform: scale(0.96); }
+.lesson {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid #e0e6e2;
+  border-radius: 18px;
+  background: white;
+}
+.label {
+  color: #08685c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.lesson h4 { margin: 12px 0; font-size: 23px; }
+.lesson p { line-height: 1.6; }
+@media (max-width: 600px) {
+  .node {
+    top: 65px;
+    left: calc(28% - 25px);
+    width: 50px;
+    height: 50px;
+  }
+  .step:nth-child(even) .node {
+    left: calc(72% - 25px);
+  }
+  .copy {
+    left: calc(28% + 37px);
+    right: 12px;
+  }
+  .step:nth-child(even) .copy {
+    left: 12px;
+    right: calc(28% + 37px);
+  }
+  .copy strong { font-size: 14px; }
+  .pinNumber { width: 19px; height: 19px; font-size: 10px; }
+  .line .roadSurface { stroke-width: 5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .node { transition: none; }
+}
+
+/* Narrow roadmap with labels on the right */
+.path { max-width: 780px; }
+.node { left: calc(38% - 30px); }
+.step:nth-child(even) .node { left: calc(54% - 30px); }
+.copy {
+  left: calc(38% + 48px);
+  right: 16px;
+}
+.step:nth-child(even) .copy {
+  left: calc(54% + 48px);
+  right: 16px;
+  text-align: left;
+}
+.stepButton:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+}
+.stepButton:disabled .node {
+  background: #eceff1;
+  border-color: #d2d8dd;
+  color: #7a8791;
+}
+.stepButton:disabled .node::before {
+  content: "";
+  width: 25px;
+  height: 25px;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V7a3 3 0 0 0-6 0v3Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.stepButton[aria-current="step"] .node::before {
+  content: "▶";
+  font-size: 23px;
+}
+.stepButton:disabled .copy strong { color: #74808a; }
+@media (hover: hover) {
+  .stepButton:disabled:hover .node { transform: none; }
+  .stepButton:disabled:hover .copy strong { color: #74808a; }
+}
+@media (max-width: 600px) {
+  .node { left: calc(30% - 25px); }
+  .step:nth-child(even) .node { left: calc(46% - 25px); }
+  .line { left: -8%; }
+  .copy { left: calc(30% + 37px); right: 12px; }
+  .step:nth-child(even) .copy {
+    left: calc(46% + 37px);
+    right: 12px;
+    text-align: left;
+  }
+}
+
+/* Slightly wider curves; align checkpoints and labels */
+.node { left: calc(36% - 30px); }
+.step:nth-child(even) .node { left: calc(56% - 30px); }
+.copy { left: calc(36% + 48px); }
+.step:nth-child(even) .copy { left: calc(56% + 48px); }
+
+@media (max-width: 600px) {
+  .node { left: calc(28% - 25px); }
+  .step:nth-child(even) .node { left: calc(48% - 25px); }
+  .copy { left: calc(28% + 37px); }
+  .step:nth-child(even) .copy { left: calc(48% + 37px); }
+}
