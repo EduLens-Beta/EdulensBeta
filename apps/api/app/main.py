@@ -96,3 +96,7 @@ async def prevent_auth_response_caching(request: Request, call_next):
     ):
         response.headers["Cache-Control"] = "no-store"
     return response
+
+from app.courses.routes import router as courses_router
+
+app.include_router(courses_router)

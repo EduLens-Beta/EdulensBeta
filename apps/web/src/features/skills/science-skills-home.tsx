@@ -3,10 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import SkillCourseJourney from "./skill-course-journey";
-import LearningProgress from "./learning-progress";
-import { scienceExplorerRoadmap } from "./science-roadmap";
-import { LearningProvider, useLearning } from "./learning-provider";
+import SkillCourseJourney, { CourseProgressPanel } from "./skill-course-journey";
+import { CourseProvider, CourseFeedback } from "./course-provider";
 import styles from "./workspace.module.css";
 
 const sections = [
@@ -27,20 +25,7 @@ function ScienceSkillsWorkspace({
   onEditSchool: () => void;
 }) {
   const [section, setSection] = useState<Section>("journey");
-  const { setSelected } = useLearning();
-  function openActivity(stepId: string) {
-    const index = scienceExplorerRoadmap.steps.findIndex(
-      (step) => step.id === stepId,
-    );
-    if (index < 0) return;
-    setSelected(index);
-    setSection("journey");
-    requestAnimationFrame(() => {
-      document.getElementById("science-roadmap")?.scrollIntoView({
-        block: "start",
-      });
-    });
-  }
+  const [courseId, setCourseId] = useState<string | null>(null);
 
   return (
     <div className={styles.workspace}>
@@ -64,6 +49,7 @@ function ScienceSkillsWorkspace({
       </aside>
 
       <div className={styles.content}>
+        <CourseFeedback />
         <div className={styles.dashboardTop}>
           <div className={styles.studentIdentity}>
             <span className={styles.avatar} aria-hidden="true">
@@ -110,11 +96,11 @@ function ScienceSkillsWorkspace({
         <section hidden={section !== "journey"} aria-labelledby="journey-title">
           <p className={styles.eyebrow}>MY JOURNEY</p>
           <h2 id="journey-title" className={styles.title}>My learning journey</h2>
-          <SkillCourseJourney />
+          <SkillCourseJourney courseId={courseId} onCourseChange={setCourseId} />
         </section>
 
         <div hidden={section !== "progress"}>
-          <LearningProgress onOpen={openActivity} />
+          <CourseProgressPanel onOpen={(id) => { setCourseId(id); setSection("journey"); }} />
         </div>
       </div>
     </div>
@@ -128,8 +114,8 @@ export default function ScienceSkillsHome(props: {
   onEditSchool: () => void;
 }) {
   return (
-    <LearningProvider>
+    <CourseProvider>
       <ScienceSkillsWorkspace {...props} />
-    </LearningProvider>
+    </CourseProvider>
   );
 }

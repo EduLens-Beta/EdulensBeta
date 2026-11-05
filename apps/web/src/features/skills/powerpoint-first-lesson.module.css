@@ -1,0 +1,49 @@
+.lesson h4 { margin: 12px 0; color: #142f35; font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.7px; }
+.eyebrow { color: #087467; font-size: 10px; font-weight: 750; letter-spacing: 1.5px; }
+.intro { margin-bottom: 26px; color: #65796f; line-height: 1.7; }
+.layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr); gap: 20px; align-items: start; }
+.editor { min-width: 0; overflow: hidden; border: 1px solid #d7ded7; border-radius: 14px; background: white; }
+.titlebar { display: flex; align-items: center; gap: 10px; padding: 14px; background: #9b402e; color: white; font-size: 12px; font-weight: 650; }
+.logo { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 5px; background: #ffffff26; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 20px; padding: 13px 16px; border-bottom: 1px solid #dedfda; font-size: 11px; color: #59665d; }
+.toolNote { margin-left: auto; color: #919a91; }
+.workspace { display: grid; grid-template-columns: 65px minmax(0, 1fr); min-height: 260px; }
+.thumbnail { padding: 18px 7px; border-right: 1px solid #e0e3dd; background: #f8f9f5; font-size: 10px; }
+.thumbnail > div { margin-top: 8px; padding: 14px 3px; border: 1px solid #ab735e; background: white; font-size: 7px; text-align: center; }
+.canvas { display: grid; align-items: center; min-width: 0; padding: 22px 14px; background: #edf0eb; }
+.slide { display: flex; flex-direction: column; justify-content: center; gap: 16px; min-width: 0; min-height: 200px; padding: 24px; border-left: 6px solid #08685c; background: white; }
+.titleInput, .subtitleInput { box-sizing: border-box; width: 100%; min-width: 0; padding: 12px 5px; border: 1px dashed #b9c5bb; border-radius: 0; background: white; color: #142f35; font-family: inherit; }
+.titleInput { font-size: clamp(16px, 2vw, 24px); font-weight: 650; }
+.subtitleInput { font-size: 13px; }
+.demoTitle { padding: 10px 4px; font-size: clamp(16px, 2vw, 24px); font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
+.demoSubtitle { padding: 8px 4px; color: #52686c; font-size: 13px; line-height: 1.5; }
+.demoTitle[data-highlight="true"], .demoSubtitle[data-highlight="true"] { outline: 2px solid #087467; background: #eff8ef; }
+.statusbar { display: flex; justify-content: space-between; gap: 12px; padding: 12px; background: #f7f8f4; color: #79877c; font-size: 10px; }
+.start { display: grid; place-items: center; min-height: 300px; padding: 20px; background: #f1f3ee; }
+.start button { display: grid; gap: 12px; padding: 20px; border: 1px solid #c9d8cc; border-radius: 12px; background: white; color: #315344; font: inherit; font-size: 13px; cursor: pointer; }
+.blankSlide { display: grid; place-items: center; width: 140px; height: 85px; border: 1px solid #e1e5dc; font-size: 30px; color: #087467; }
+.guide { padding: 20px; border: 1px solid #dfe7df; border-radius: 14px; background: white; }
+.guide h5 { margin: 0 0 15px; color: #142f35; font-size: 17px; }
+.step { display: flex; align-items: flex-start; gap: 10px; padding: 12px 8px; border: 1px solid transparent; border-radius: 10px; }
+.step[data-active="true"] { background: #edf7ef; border-color: #c5decb; }
+.step > span { display: grid; place-items: center; flex-shrink: 0; width: 23px; height: 23px; border-radius: 50%; background: #e0ebe1; color: #087467; font-size: 11px; }
+.step strong { color: #193a32; font-size: 12px; }
+.step p { margin: 7px 0 0; color: #6b7c72; font-size: 12px; line-height: 1.7; }
+.note { color: #7a887e; font-size: 11px; line-height: 1.7; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 14px 0; }
+.actions > span { color: #27703d; font-size: 12px; line-height: 1.6; }
+.primary, .secondary { min-height: 44px; padding: 12px 16px; border: 1px solid #08685c; border-radius: 9px; background: #08685c; color: white; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.secondary { background: white; color: #08685c; }
+.primary:disabled, .secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+.footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 20px; border-top: 1px solid #e0e7df; }
+.footer > span { color: #718477; font-size: 12px; line-height: 1.6; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.lesson button:focus-visible, .lesson input:focus-visible { outline: 3px solid #4286b5; outline-offset: 3px; }
+@media (max-width: 1200px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .workspace { grid-template-columns: 42px minmax(0, 1fr); }
+  .canvas { padding: 14px 8px; }
+  .slide { padding: 14px; }
+  .toolbar { gap: 12px; }
+  .toolNote { display: none; }
+}

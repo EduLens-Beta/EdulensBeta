@@ -1,87 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { useCourses } from "./course-provider";
+import CourseEpisodes from "./course-episodes";
+import type { CourseStatus } from "./course-data";
 import styles from "./skill-course-journey.module.css";
 
-const courses = [
-  {
-    id: "computer-basics",
-    title: "Computer basics",
-    description: "Get comfortable with everyday digital tools.",
-    lessons: [
-      "Files and folders",
-      "Typing and useful shortcuts",
-      "Email and attachments",
-      "Passwords and online safety",
-    ],
-  },
-  {
-    id: "documents",
-    title: "Documents",
-    description: "Create clear documents in Word or Google Docs.",
-    lessons: [
-      "Create and save a document",
-      "Headings and text formatting",
-      "Images and tables",
-      "Create your first PDF",
-    ],
-  },
-  {
-    id: "powerpoint",
-    title: "PowerPoint",
-    description: "Share an idea through a short presentation.",
-    lessons: [
-      "Create your first slides",
-      "Choose a clear layout",
-      "Add images and charts",
-      "Present your idea",
-    ],
-  },
-  {
-    id: "excel",
-    title: "Excel",
-    description: "Organise information and make simple calculations.",
-    lessons: [
-      "Cells, rows and columns",
-      "Enter and format information",
-      "SUM and AVERAGE",
-      "Sort and filter",
-      "Create a simple chart",
-      "Make a small expense tracker",
-    ],
-  },
-  {
-    id: "python",
-    title: "Python",
-    description: "Write your first small programs.",
-    lessons: [
-      "Print a message",
-      "Variables and numbers",
-      "Ask for input",
-      "Make decisions with conditions",
-      "Repeat with loops",
-      "Build a simple quiz",
-    ],
-  },
-] as const;
+type PathItem = {
+  id: string;
+  title: string;
+  status: CourseStatus;
+};
 
 function CurvedPath({
   items,
+  pending,
   onSelect,
 }: {
-  items: readonly { title: string; description?: string }[];
-  onSelect: (index: number) => void;
+  items: PathItem[];
+  pending: boolean;
+  onSelect: (id: string) => void;
 }) {
   const height = items.length * 180;
-  let path = "M 36 90";
-
-  for (let index = 1; index < items.length; index += 1) {
-    const previousX = index % 2 === 1 ? 36 : 56;
-    const nextX = index % 2 === 1 ? 56 : 36;
-    const previousY = (index - 1) * 180 + 90;
-    const nextY = index * 180 + 90;
-    path += ` C ${previousX} ${previousY + 90}, ${nextX} ${nextY - 90}, ${nextX} ${nextY}`;
-  }
+  const segments = items.slice(1).map((item, index) => {
+    const previousX = index % 2 === 0 ? 36 : 56;
+    const nextX = index % 2 === 0 ? 56 : 36;
+    const y = index * 180 + 90;
+    return {
+      id: item.id,
+      d: `M ${previousX} ${y} C ${previousX} ${y + 90}, ${nextX} ${y + 90}, ${nextX} ${y + 180}`,
+      reached: item.status !== "locked",
+    };
+  });
 
   return (
     <div className={styles.path}>
@@ -91,32 +41,41 @@ function CurvedPath({
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <path d={path} className={styles.roadEdge} />
-        <path d={path} className={styles.roadSurface} />
-        <path d={path} className={styles.roadMarks} />
+        {segments.map((segment) => (
+          <path
+            key={segment.id}
+            d={segment.d}
+            className={styles.roadSurface}
+            style={segment.reached ? { stroke: "#16a59a" } : undefined}
+          />
+        ))}
       </svg>
-
       <ol className={styles.steps}>
         {items.map((item, index) => (
-          <li key={item.title} className={styles.step}>
+          <li key={item.id} className={styles.step}>
             <button
               type="button"
               className={styles.stepButton}
-              aria-current={index === 0 ? "step" : undefined}
-              disabled={index > 0}
-              onClick={() => onSelect(index)}
-              aria-label={`Explore ${item.title}`}
+              data-state={item.status}
+              aria-current={item.status === "current" ? "step" : undefined}
+              disabled={item.status === "locked" || pending}
+              aria-label={`${item.title}, ${item.status}`}
+              onClick={() => onSelect(item.id)}
             >
               <span className={styles.node} aria-hidden="true">
                 <span className={styles.pinNumber}>{index + 1}</span>
               </span>
               <span className={styles.copy}>
-                {index === 0 && (
-                  <span className={styles.currentLabel}>YOU ARE HERE</span>
-                )}
                 <strong>{item.title}</strong>
-
-                {index === 0 && <span className={styles.action}>Start learning →</span>}
+                {item.status === "current" && (
+                  <>
+                    <span className={styles.currentLabel}>YOU ARE HERE</span>
+                    <span className={styles.action}>Continue →</span>
+                  </>
+                )}
+                {item.status === "completed" && (
+                  <span className={styles.completedLabel}>Completed · Review →</span>
+                )}
               </span>
             </button>
           </li>
@@ -126,59 +85,98 @@ function CurvedPath({
   );
 }
 
-export default function SkillCourseJourney() {
-  const [courseIndex, setCourseIndex] = useState<number | null>(null);
-  const [lessonIndex, setLessonIndex] = useState<number | null>(null);
-  const course = courseIndex === null ? null : courses[courseIndex];
+export default function SkillCourseJourney({
+  courseId,
+  onCourseChange,
+}: {
+  courseId: string | null;
+  onCourseChange: (id: string | null) => void;
+}) {
+  const { progress, pending, loading } = useCourses();
+  if (!progress) return null;
 
-  function openCourse(index: number) {
-    setCourseIndex(index);
-    setLessonIndex(null);
-  }
+  const course = progress.courses.find((item) => item.id === courseId);
+
+  return course ? (
+    <CourseEpisodes
+      key={course.id}
+      course={course}
+      onBack={() => onCourseChange(null)}
+    />
+  ) : (
+    <div className={styles.journey}>
+      <CurvedPath
+        items={progress.courses}
+        pending={pending || loading}
+        onSelect={onCourseChange}
+      />
+    </div>
+  );
+}
+
+export function CourseProgressPanel({
+  onOpen,
+}: {
+  onOpen: (courseId: string) => void;
+}) {
+  const { progress, pending, loading } = useCourses();
+  const [filter, setFilter] = useState<"ongoing" | "completed">("ongoing");
+  if (!progress) return null;
+
+  const visible = progress.courses.filter((course) =>
+    filter === "completed"
+      ? course.status === "completed"
+      : course.started_at !== null && course.status !== "completed",
+  );
 
   return (
-    <div className={styles.journey}>
-      {course ? (
-        <>
+    <section className={styles.journey} aria-labelledby="course-progress-title">
+      <h2 id="course-progress-title" className={styles.heading}>My progress</h2>
+      <div className={styles.workActions}>
+        <button
+          type="button"
+          className={styles.filterButton}
+          aria-pressed={filter === "ongoing"}
+          onClick={() => setFilter("ongoing")}
+        >
+          In progress
+        </button>
+        <button
+          type="button"
+          className={styles.filterButton}
+          aria-pressed={filter === "completed"}
+          onClick={() => setFilter("completed")}
+        >
+          Completed
+        </button>
+      </div>
+      {visible.length === 0 && (
+        <p className={styles.description}>
+          {filter === "completed"
+            ? "Your completed courses will appear here."
+            : "Start your first course in My journey."}
+        </p>
+      )}
+      {visible.map((course) => (
+        <article key={course.id} className={styles.lesson}>
+          <h3>{course.title}</h3>
+          <p>{course.completed_lessons} of {course.total_lessons} lessons completed</p>
+          <progress
+            aria-label={`${course.title} progress`}
+            value={course.completed_lessons}
+            max={course.total_lessons}
+          />
+          <p>{course.progress_percent}% complete</p>
           <button
             type="button"
             className={styles.back}
-            onClick={() => {
-              setCourseIndex(null);
-              setLessonIndex(null);
-            }}
+            disabled={pending || loading}
+            onClick={() => onOpen(course.id)}
           >
-            ← All skills
+            {course.status === "completed" ? "Review course →" : "Continue course →"}
           </button>
-          <h3 className={styles.heading}>{course.title}</h3>
-          <p className={styles.description}>{course.description}</p>
-          <CurvedPath
-            items={course.lessons.map((title) => ({ title }))}
-            onSelect={setLessonIndex}
-          />
-          {lessonIndex !== null && (
-            <section className={styles.lesson} aria-live="polite">
-              <p className={styles.label}>LESSON {lessonIndex + 1}</p>
-              <h4>{course.lessons[lessonIndex]}</h4>
-              <p>This lesson is being prepared.</p>
-              <button
-                type="button"
-                className={styles.back}
-                onClick={() => setLessonIndex(null)}
-              >
-                Close
-              </button>
-            </section>
-          )}
-        </>
-      ) : (
-        <>
-          <p className={styles.description}>
-            Start with the basics. Build one skill at a time.
-          </p>
-          <CurvedPath items={courses} onSelect={openCourse} />
-        </>
-      )}
-    </div>
+        </article>
+      ))}
+    </section>
   );
 }

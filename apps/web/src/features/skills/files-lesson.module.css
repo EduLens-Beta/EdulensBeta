@@ -1,0 +1,45 @@
+.lesson h4 { margin: 12px 0; color: #142f35; font-size: clamp(24px, 3vw, 34px); letter-spacing: -0.8px; }
+.eyebrow { color: #087467; font-size: 10px; font-weight: 750; letter-spacing: 1.5px; }
+.intro { margin: 0 0 26px; color: #65796f; line-height: 1.7; }
+.layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(220px, 1fr); gap: 20px; align-items: start; }
+.layout > div { min-width: 0; }
+.window { overflow: hidden; border: 1px solid #cbd7d2; border-radius: 14px; background: white; }
+.windowHeader { display: flex; align-items: center; gap: 9px; padding: 14px 16px; background: #edf2ed; font-size: 12px; font-weight: 650; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #087467; }
+.breadcrumb { padding: 12px 16px; border-bottom: 1px solid #e5eae4; color: #536e63; font-size: 12px; }
+.breadcrumb button { padding: 6px; border: 0; background: transparent; color: #087467; font: inherit; cursor: pointer; }
+.breadcrumb button:disabled { color: #536e63; cursor: default; }
+.fileArea { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; min-height: 210px; padding: 24px 18px; }
+.file, .folder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 0; padding: 18px 12px; border: 1px solid #e2e8e1; border-radius: 12px; background: #fbfcfa; text-align: center; }
+.file strong, .folder strong { color: #173b32; font-size: 13px; overflow-wrap: anywhere; line-height: 1.5; }
+.file span, .folder span { color: #78887e; font-size: 11px; line-height: 1.5; }
+.folder { font: inherit; cursor: pointer; }
+.folder:hover { border-color: #087467; background: #f0f8f0; }
+.folder:disabled { opacity: 1; cursor: default; }
+.windowFooter { padding: 12px 16px; border-top: 1px solid #e5eae4; color: #7e8d84; font-size: 11px; line-height: 1.5; }
+.instructions { padding: 22px; border: 1px solid #dfe7df; border-radius: 14px; background: white; }
+.instructions h5 { margin: 0 0 20px; color: #142f35; font-size: 19px; }
+.instruction { display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; padding: 13px 10px; border: 1px solid transparent; border-radius: 10px; }
+.instruction[data-active="true"] { border-color: #b8d6c8; background: #eef7f0; }
+.instruction > span { display: grid; place-items: center; flex-shrink: 0; width: 25px; height: 25px; border-radius: 50%; background: #e4ece5; color: #087467; font-size: 12px; font-weight: 700; }
+.instruction strong { color: #193a32; font-size: 13px; }
+.instruction p { margin: 7px 0 0; color: #6b7c72; font-size: 12px; line-height: 1.7; }
+.controls { display: grid; gap: 12px; margin-top: 20px; color: #405e51; font-size: 13px; }
+.inputRow { display: flex; flex-wrap: wrap; gap: 10px; }
+.inputRow input { box-sizing: border-box; flex: 1 1 180px; min-width: 0; padding: 12px; border: 1px solid #cbd7ce; border-radius: 9px; font: inherit; }
+.primary, .secondary { min-height: 44px; padding: 12px 16px; border: 1px solid #08685c; border-radius: 9px; background: #08685c; color: white; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.secondary { background: white; color: #08685c; }
+.primary:disabled, .secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+.success { padding: 16px; border: 1px solid #c6e0cc; border-radius: 10px; background: #edf8ef; color: #267242; font-size: 13px; line-height: 1.7; }
+.footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-top: 28px; padding-top: 22px; border-top: 1px solid #e0e7df; }
+.footer > span { color: #718477; font-size: 12px; line-height: 1.6; }
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.lesson button:focus-visible, .lesson input:focus-visible { outline: 3px solid #4286b5; outline-offset: 3px; }
+@media (max-width: 1200px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .fileArea { padding: 16px 12px; gap: 10px; }
+  .file, .folder { padding: 14px 8px; }
+  .instructions { padding: 16px; }
+  .footer, .buttons { align-items: stretch; }
+  .footer > .primary { width: 100%; }
+}
